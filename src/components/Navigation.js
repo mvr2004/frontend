@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // Corrigido para exportação nomeada
+import { jwtDecode } from 'jwt-decode'; // nao mudes isto ta bem assim
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -36,6 +36,18 @@ const Navigation = () => {
                 <li className="nav-item">
                   <Link className="nav-link" to="/events">Event Management</Link>
                 </li>
+
+                {/* Adiciona dropdown de Áreas */}
+                <li className="nav-item dropdown">
+                  <a className="nav-link dropdown-toggle" href="#" id="areasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Áreas
+                  </a>
+                  <ul className="dropdown-menu" aria-labelledby="areasDropdown">
+                    <li><Link className="dropdown-item" to="/areas">Listar Áreas</Link></li>
+                    <li><Link className="dropdown-item" to="/subareas">Listar Subáreas</Link></li>
+                  </ul>
+                </li>
+
                 <li className="nav-item dropdown">
                   <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Reports
@@ -43,6 +55,17 @@ const Navigation = () => {
                   <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
                     <li><Link className="dropdown-item" to="/reportsPorResolver">To Solve</Link></li>
                     <li><Link className="dropdown-item" to="/reportsResolvidos">Solved</Link></li>
+                  </ul>
+                </li>
+
+                {/* Adiciona dropdown de Comentários */}
+                <li className="nav-item dropdown">
+                  <a className="nav-link dropdown-toggle" href="#" id="commentsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Comentários
+                  </a>
+                  <ul className="dropdown-menu" aria-labelledby="commentsDropdown">
+                    <li><Link className="dropdown-item" to="/comments/published">Publicado</Link></li>
+                    <li><Link className="dropdown-item" to="/comments/pending">Por Publicar</Link></li>
                   </ul>
                 </li>
               </>

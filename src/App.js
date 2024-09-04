@@ -10,6 +10,10 @@ import VerReport from './views/ver_Report';
 import EventManagement from './views/listar_Events';
 import CenterManagement from './views/listar_Centros';
 import CriarCentros from './views/criar_Centros';
+import ListarAreas from './views/ListarAreas';
+import ListarSubareas from './views/ListarSubareas';
+import PublishedCommentsPage from './views/comentarios_publicados';
+import PendingCommentsPage from './views/comentarios_pendentes';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppContent = () => {
@@ -82,6 +86,38 @@ const AppContent = () => {
           element={
             <ProtectedRoute requiredRole="master">
               <CriarCentros />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/areas" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <ListarAreas />
+            </ProtectedRoute>
+          }
+        />
+        <Route 
+          path="/subareas" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <ListarSubareas />
+            </ProtectedRoute>
+          }
+        />
+        <Route 
+          path="/comments/published" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <PublishedCommentsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/comments/pending" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <PendingCommentsPage />
             </ProtectedRoute>
           } 
         />

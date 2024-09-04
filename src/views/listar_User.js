@@ -15,29 +15,29 @@ const UserManagement = () => {
   const [centrosDisponiveis, setCentrosDisponiveis] = useState([]);
   const [areasDisponiveis, setAreasDisponiveis] = useState([]);
   const [userAreas, setUserAreas] = useState([]);
+  const [selectedCentro, setSelectedCentro] = useState('');
   const usersPerPage = 10;
 
   useEffect(() => {
-    if (!searchTerm && currentPage === 1) {
-      fetchUsers(1);
-      fetchCentros();
-      fetchAreas();
-    } else {
-      handleSearch();
-    }
-  }, [searchTerm, currentPage]);
+    fetchUsers(currentPage);
+    fetchCentros();
+    fetchAreas();
+  }, [searchTerm, selectedCentro, currentPage]);
 
   const fetchUsers = async (page) => {
     try {
       setLoading(true);
       const url = searchTerm
-        ? `https://backend-ai2-proj.onrender.com/user/search?search=${searchTerm}&page=${page}&limit=${usersPerPage}`
-        : `https://backend-ai2-proj.onrender.com/user/list?page=${page}&limit=${usersPerPage}`;
+        ? `https://backend-9hij.onrender.com/adminuser/search?search=${searchTerm}&centroId=${selectedCentro}&page=${page}&limit=${usersPerPage}`
+        : `https://backend-9hij.onrender.com/adminuser/list?centroId=${selectedCentro}&page=${page}&limit=${usersPerPage}`;
       const response = await axios.get(url);
+
       if (searchTerm) {
         setSearchResults(response.data);
+        setUsers([]);
       } else {
         setUsers(response.data);
+        setSearchResults([]);
       }
       setLoading(false);
     } catch (error) {
@@ -48,7 +48,7 @@ const UserManagement = () => {
 
   const fetchCentros = async () => {
     try {
-      const response = await axios.get('https://backend-ai2-proj.onrender.com/centro/list');
+      const response = await axios.get('https://backend-9hij.onrender.com/centros/list1');
       setCentrosDisponiveis(response.data);
     } catch (error) {
       console.error('Error fetching centers', error);
@@ -57,8 +57,8 @@ const UserManagement = () => {
 
   const fetchAreas = async () => {
     try {
-      const response = await axios.get('https://backend-ai2-proj.onrender.com/area/list');
-      setAreasDisponiveis(response.data);
+      const response = await axios.get('https://backend-9hij.onrender.com/areas/list');
+      setAreasDisponiveis(response.data.areas || []);
     } catch (error) {
       console.error('Error fetching areas', error);
     }
@@ -66,23 +66,15 @@ const UserManagement = () => {
 
   const fetchUserAreas = async (userId) => {
     try {
-      const response = await axios.get(`https://backend-ai2-proj.onrender.com/area/list-user-areas/${userId}`);
+      const response = await axios.get(`https://backend-9hij.onrender.com/areas/list-user-areas/${userId}`);
       setUserAreas(response.data.map(area => area.id));
     } catch (error) {
       console.error('Error fetching user areas', error);
     }
   };
 
-  const handleSearch = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`https://backend-ai2-proj.onrender.com/user/search?search=${searchTerm}&page=${currentPage}&limit=${usersPerPage}`);
-      setSearchResults(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error searching users', error);
-      setLoading(false);
-    }
+  const handleSearch = () => {
+    fetchUsers(1);
   };
 
   const handleShow = (user = {}) => {
@@ -114,9 +106,9 @@ const UserManagement = () => {
       };
 
       if (id) {
-        await axios.put(`https://backend-ai2-proj.onrender.com/user/update/${id}`, userToSave);
+        await axios.put(`https://backend-9hij.onrender.com/adminuser/update/${id}`, userToSave);
       } else {
-        await axios.post('https://backend-ai2-proj.onrender.com/user/add', userToSave);
+        await axios.post('https://backend-9hij.onrender.com/adminuser/add', userToSave);
       }
       setShow(false);
       fetchUsers(currentPage);
@@ -128,7 +120,13 @@ const UserManagement = () => {
   const handleSaveInterests = async () => {
     try {
       const { id } = currentUser;
-      await axios.post('https://backend-ai2-proj.onrender.com/area/add-user-area', { userId: id, areaIds: userAreas });
+      await axios.post('https://backend-9hij.onrender.com/areas/add-user-area', {
+        userId: id,
+        areaIds: userAreas
+      });
+
+      await fetchUserAreas(id);
+      fetchUsers(currentPage);
       setShowInterestModal(false);
     } catch (error) {
       console.error('Error saving user interests', error);
@@ -137,7 +135,7 @@ const UserManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://backend-ai2-proj.onrender.com/user/delete/${id}`);
+      await axios.delete(`https://backend-9hij.onrender.com/adminuser/delete/${id}`);
       fetchUsers(currentPage);
     } catch (error) {
       console.error('Error deleting user', error);
@@ -149,16 +147,21 @@ const UserManagement = () => {
     setCurrentPage(1);
   };
 
+  const handleCentroChange = (e) => {
+    setSelectedCentro(e.target.value);
+    setCurrentPage(1);
+  };
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
 
   const handleCheckboxChange = (areaId) => {
-    if (userAreas.includes(areaId)) {
-      setUserAreas(userAreas.filter(id => id !== areaId));
-    } else {
-      setUserAreas([...userAreas, areaId]);
-    }
+    setUserAreas(prevAreas =>
+      prevAreas.includes(areaId)
+        ? prevAreas.filter(id => id !== areaId)
+        : [...prevAreas, areaId]
+    );
   };
 
   const renderPagination = () => {
@@ -181,6 +184,18 @@ const UserManagement = () => {
   };
 
   const renderTableData = () => {
+    if (loading) {
+      return (
+        <tbody>
+          <tr>
+            <td colSpan="5" className="text-center">
+              <Spinner animation="border" />
+            </td>
+          </tr>
+        </tbody>
+      );
+    }
+
     const dataToDisplay = searchTerm ? searchResults : users;
     const startIndex = (currentPage - 1) * usersPerPage;
     const slicedUsers = dataToDisplay.slice(startIndex, startIndex + usersPerPage);
@@ -242,7 +257,21 @@ const UserManagement = () => {
             placeholder="Pesquisar por nome, email ou ID"
             value={searchTerm}
             onChange={handleChange}
+            className="mb-2"
           />
+          <Form.Control
+            as="select"
+            value={selectedCentro}
+            onChange={handleCentroChange}
+            className="mb-3"
+          >
+            <option value="">Todos os Centros</option>
+            {centrosDisponiveis.map((centro) => (
+              <option key={centro.id} value={centro.id}>
+                {centro.centro}
+              </option>
+            ))}
+          </Form.Control>
         </Form>
       </div>
       <Button variant="primary" onClick={() => handleShow()} className="mb-3">
@@ -258,17 +287,7 @@ const UserManagement = () => {
             <th>Ações</th>
           </tr>
         </thead>
-        {loading ? (
-          <tbody>
-            <tr>
-              <td colSpan="5" className="text-center">
-                <Spinner animation="border" />
-              </td>
-            </tr>
-          </tbody>
-        ) : (
-          renderTableData()
-        )}
+        {renderTableData()}
       </Table>
       {renderPagination()}
 
