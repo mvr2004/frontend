@@ -31,11 +31,17 @@ const Navigation = () => {
                 <li className="nav-item">
                   <Link className="nav-link" to="/users">Utilizadores</Link>
                 </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/events">Eventos</Link>
+                {/* Dropdown para Eventos */}
+                <li className="nav-item dropdown">
+                  <a className="nav-link dropdown-toggle" href="#" id="eventsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Eventos
+                  </a>
+                  <ul className="dropdown-menu" aria-labelledby="eventsDropdown">
+                    <li><Link className="dropdown-item" to="/events/active">Eventos Ativos</Link></li>
+                    <li><Link className="dropdown-item" to="/events/inactive">Eventos Inativos</Link></li>
+                  </ul>
                 </li>
-
-                {/* Dropdown for Áreas */}
+                {/* Dropdown para Áreas */}
                 <li className="nav-item dropdown">
                   <a className="nav-link dropdown-toggle" href="#" id="areasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Áreas
@@ -45,8 +51,7 @@ const Navigation = () => {
                     <li><Link className="dropdown-item" to="/subareas">Subáreas</Link></li>
                   </ul>
                 </li>
-
-                {/* Dropdown for Comentários */}
+                {/* Dropdown para Comentários */}
                 <li className="nav-item dropdown">
                   <a className="nav-link dropdown-toggle" href="#" id="commentsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Comentários
@@ -56,8 +61,7 @@ const Navigation = () => {
                     <li><Link className="dropdown-item" to="/comments/pending">Por Publicar</Link></li>
                   </ul>
                 </li>
-
-                {/* New Dropdown for Estabelecimentos */}
+                {/* Dropdown para Estabelecimentos */}
                 <li className="nav-item dropdown">
                   <a className="nav-link dropdown-toggle" href="#" id="estabelecimentosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Estabelecimentos
@@ -88,3 +92,5 @@ const Navigation = () => {
 };
 
 export default Navigation;
+
+;

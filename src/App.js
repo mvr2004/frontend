@@ -7,12 +7,13 @@ import UserManagement from './views/listar_User';
 import Navigation from './components/Navigation';
 import ReportsList from './views/listar_Reports';
 import VerReport from './views/ver_Report';
-import EventManagement from './views/listar_Events';
 import CenterManagement from './views/listar_Centros';
 import CriarCentros from './views/criar_Centros';
 import ListarAreas from './views/ListarAreas';
 import ListarSubareas from './views/ListarSubareas';
 import PublishedCommentsPage from './views/comentarios_publicados';
+import EventosAtivos from './views/eventos_ativos'; // Altere o nome do componente para uma nomenclatura consistente
+import EventosInativos from './views/eventos_inativos'; // Altere o nome do componente para uma nomenclatura consistente
 import PendingCommentsPage from './views/comentarios_pendentes';
 import EstablishmentsActive from './views/EstablishmentsActive';
 import EstablishmentsInactive from './views/EstablishmentsInactive';
@@ -43,11 +44,20 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
+        {/* Rotas para eventos */}
         <Route 
-          path="/events" 
+          path="/events/active" 
           element={
             <ProtectedRoute requiredRole="admin">
-              <EventManagement />
+              <EventosAtivos />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/events/inactive" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <EventosInativos />
             </ProtectedRoute>
           } 
         />
@@ -123,22 +133,22 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-		<Route 
-		  path="/establishments/active" 
-		  element={
-			<ProtectedRoute requiredRole="admin">
-			  <EstablishmentsActive />
-			</ProtectedRoute>
-		  } 
-		/>
-		<Route 
-		  path="/establishments/inactive" 
-		  element={
-			<ProtectedRoute requiredRole="admin">
-			  <EstablishmentsInactive />
-			</ProtectedRoute>
-		  } 
-/>
+        <Route 
+          path="/establishments/active" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <EstablishmentsActive />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/establishments/inactive" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <EstablishmentsInactive />
+            </ProtectedRoute>
+          } 
+        />
         <Route 
           path="*" 
           element={<Navigate to="/login" />} 
