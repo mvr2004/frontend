@@ -8,18 +8,19 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('https://backend-9hij.onrender.com/admin/login', { nome, password });
-            localStorage.setItem('token', response.data.token);
-            localStorage.setItem('idCentro', response.data.idCentro); // Guarda o ID do centro
-            navigate('/dashboard'); // Redireciona para o dashboard após login bem-sucedido
-        } catch (error) {
-            // Trata o erro e define a mensagem de erro
-            setError('Nome de utilizador ou palavra-passe inválidos.');
-        }
-    };
+	const handleLogin = async (e) => {
+		e.preventDefault();
+		try {
+			const response = await axios.post('https://backend-9hij.onrender.com/admin/login', { nome, password });
+			localStorage.setItem('token', response.data.token);
+			localStorage.setItem('idCentro', response.data.idCentro); // Guarda o ID do centro
+			navigate('/dashboard'); // Redireciona para o dashboard após login bem-sucedido
+		} catch (error) {
+			// Trata o erro e define a mensagem de erro
+			setError('Nome de utilizador ou palavra-passe inválidos.');
+		}
+	};
+
 
     return (
         <div className="bg-light py-3 py-md-5 py-xl-8">
