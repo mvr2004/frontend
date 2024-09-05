@@ -1,176 +1,117 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import UserManagement from './views/listar_User';
-import Navigation from './components/Navigation';
-import ReportsList from './views/listar_Reports';
-import VerReport from './views/ver_Report';
-import CenterManagement from './views/listar_Centros';
-import CriarCentros from './views/criar_Centros';
-import ListarAreas from './views/ListarAreas';
-import ListarSubareas from './views/ListarSubareas';
-import PublishedCommentsPage from './views/comentarios_publicados';
-import EventosAtivos from './views/eventos_ativos';
-import EventosInativos from './views/eventos_inativos';
-import PendingCommentsPage from './views/comentarios_pendentes';
-import EstablishmentsActive from './views/EstablishmentsActive';
-import EstablishmentsInactive from './views/EstablishmentsInactive';
-import Forum from './views/Forum'; // Import the new Forum component
-import ProtectedRoute from './components/ProtectedRoute';
+const express = require('express');
+const session = require('express-session');
+const cors = require('cors');
+const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const userRoutes = require('./routes/userRoutes');
+const admin_userRoutes = require('./routes/admin_userRoutes');
+const genericRoutes = require('./routes/genericRoutes');
+const forumRoutes = require('./routes/forumRoutes');
+const areaRoutes = require('./routes/areaRoutes');
+const estabRoutes = require('./routes/estabelecimentoRoutes');
+const eventRoutes = require('./routes/eventoRoutes');
+const partRoutes = require('./routes/participacaoRoutes');
+const formularioRoutes = require('./routes/formularioRoutes');
+const centroRoutes = require('./routes/centroRoutes');
+const albumRoutes = require('./routes/albumRoutes');
+const utilizadorGrupoRoutes = require('./routes/utilizadorGrupoRoutes');
+const grupoRoutes = require('./routes/grupoRoutes');
+const comentarioRoutes = require('./routes/comentarioRoutes');
+const sequelize = require('./configs/database');
+const errorHandler = require('./middleware/errorHandler');
+const dotenv = require('dotenv');
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
-const AppContent = () => {
-  const location = useLocation();
+dotenv.config();
 
-  return (
-    <div>
-      {location.pathname !== '/login' && location.pathname !== '/register' && <Navigation />}
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <DashboardPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/users" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <UserManagement />
-            </ProtectedRoute>
-          } 
-        />
-        {/* Rotas para eventos */}
-        <Route 
-          path="/events/active" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <EventosAtivos />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/events/inactive" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <EventosInativos />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/reportsPorResolver" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <ReportsList resolvido={false} />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/reportsResolvidos" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <ReportsList resolvido={true} />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/reports/:id" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <VerReport />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/centers" 
-          element={
-            <ProtectedRoute requiredRole="master">
-              <CenterManagement />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/createCenter" 
-          element={
-            <ProtectedRoute requiredRole="master">
-              <CriarCentros />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/areas" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <ListarAreas />
-            </ProtectedRoute>
-          }
-        />
-        <Route 
-          path="/subareas" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <ListarSubareas />
-            </ProtectedRoute>
-          }
-        />
-        <Route 
-          path="/comments/published" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <PublishedCommentsPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/comments/pending" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <PendingCommentsPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/establishments/active" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <EstablishmentsActive />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/establishments/inactive" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <EstablishmentsInactive />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/forum" 
-          element={
-            <ProtectedRoute requiredRole="admin">
-              <Forum />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="*" 
-          element={<Navigate to="/login" />} 
-        />
-      </Routes>
-    </div>
-  );
-};
+const app = express();
 
-const App = () => (
-  <Router>
-    <AppContent />
-  </Router>
-);
+app.set('port', process.env.PORT || 3000);
 
-export default App;
+// Defina o caminho de upload
+const uploadDir = path.join(__dirname, '../uploads');
+
+// Verifique se o diretório existe e crie-o se não existir
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Configuração do armazenamento de arquivos
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir); // Caminho para onde o arquivo será salvo
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname)); // Nome do arquivo no destino
+    }
+});
+
+// Instância do multer com as configurações
+const upload = multer({ storage });
+
+app.use('/uploads', express.static(uploadDir)); // Middleware para servir arquivos estáticos
+
+// Middlewares
+app.use(express.json());
+app.use(cors());
+
+// Configuração de headers CORS
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
+    next();
+});
+
+// Rotas
+app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
+app.use('/generic', genericRoutes);
+app.use('/estab', estabRoutes);
+app.use('/forum', forumRoutes);
+app.use('/areas', areaRoutes);
+app.use('/envt', eventRoutes);
+app.use('/part', partRoutes);
+app.use('/form', formularioRoutes);
+app.use('/centros', centroRoutes);
+app.use('/album', albumRoutes);
+app.use('/grupo', grupoRoutes);
+app.use('/comentario', comentarioRoutes);
+app.use('/admin', adminRoutes);
+app.use('/utilizadorgrupo', utilizadorGrupoRoutes);
+app.use('/adminuser', admin_userRoutes);
+
+
+
+
+// Middleware para upload de arquivos
+app.use(upload.single('file'));
+
+// Rota de exemplo
+app.get('/', (req, res) => {
+    res.send('API está a funcionar. Acesse /api/data para obter dados.');
+});
+
+app.get('/health', (req, res) => {
+    res.send('API está funcionando corretamente.');
+});
+
+// Middleware de tratamento de erros
+app.use(errorHandler);
+
+// Sincroniza os modelos com a base de dados e inicia o servidor
+sequelize.sync({ alter: true })
+    .then(() => {
+        app.listen(app.get('port'), () => {
+            console.log(`Servidor está a funcionar em http://localhost:${app.get('port')}`);
+        });
+    })
+    .catch(err => {
+        console.error('Erro ao sincronizar com a base de dados:', err);
+    });
+
+module.exports = app;
