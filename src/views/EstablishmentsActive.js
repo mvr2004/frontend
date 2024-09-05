@@ -1,35 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Button, Modal, Form } from 'react-bootstrap';
+import { Table, Button, Modal, Form, Pagination } from 'react-bootstrap';
 
 const EstabelecimentosPublicados = () => {
   const [ativos, setAtivos] = useState([]);
   const [error, setError] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [newEstabelecimento, setNewEstabelecimento] = useState({
-    nome: '',
-    localizacao: '',
-    contacto: '',
-    descricao: '',
-    pago: false,
-    precoMedio: '',
-    linkLocalizacao: ''
-  });
-  const [currentEstabelecimento, setCurrentEstabelecimento] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [currentEstabelecimento, setCurrentEstabelecimento] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [estabelecimentosPerPage] = useState(5);
+  const [searchTerm, setSearchTerm] = useState(''); // Estado para termo de pesquisa
 
   useEffect(() => {
-    const idCentro = localStorage.getItem('idCentro');
-
-    if (!idCentro) {
-      setError('ID do centro não encontrado.');
-      return;
-    }
-
     const fetchEstabelecimentosAtivos = async () => {
+      const idCentro = localStorage.getItem('idCentro');
+      if (!idCentro) {
+        setError('ID do centro não encontrado.');
+        return;
+      }
+
       try {
+        // Buscar estabelecimentos ativos sem paginação
         const response = await axios.get(`https://backend-9hij.onrender.com/estab/centro/ativos/${idCentro}`);
-        setAtivos(response.data.establishments);
+        setAtivos(response.data.establishments); // Assumindo que a resposta tem 'establishments'
       } catch (error) {
         console.error('Erro ao buscar estabelecimentos ativos:', error);
         setError('Erro ao buscar estabelecimentos ativos.');
@@ -37,52 +30,7 @@ const EstabelecimentosPublicados = () => {
     };
 
     fetchEstabelecimentosAtivos();
-  }, []);
-
-  const handleCreateActive = async () => {
-    try {
-      await axios.post('https://backend-9hij.onrender.com/estab/criarativo', newEstabelecimento);
-      setShowModal(false);
-      setNewEstabelecimento({
-        nome: '',
-        localizacao: '',
-        contacto: '',
-        descricao: '',
-        pago: false,
-        precoMedio: '',
-        linkLocalizacao: ''
-      });
-      window.location.reload(); // Recarrega a página após a criação
-    } catch (error) {
-      console.error('Erro ao criar estabelecimento ativo:', error);
-      setError('Erro ao criar estabelecimento ativo.');
-    }
-  };
-
-  const handleEdit = (estabelecimento) => {
-    setCurrentEstabelecimento(estabelecimento);
-    setNewEstabelecimento({
-      nome: estabelecimento.nome,
-      localizacao: estabelecimento.localizacao,
-      contacto: estabelecimento.contacto,
-      descricao: estabelecimento.descricao,
-      pago: estabelecimento.pago,
-      precoMedio: estabelecimento.precoMedio,
-      linkLocalizacao: estabelecimento.linkLocalizacao
-    });
-    setShowModal(true);
-  };
-
-  const handleSaveEdit = async () => {
-    try {
-      await axios.put(`https://backend-9hij.onrender.com/estab/alterar/${currentEstabelecimento.id}`, newEstabelecimento);
-      setShowModal(false);
-      window.location.reload(); // Recarrega a página após a alteração
-    } catch (error) {
-      console.error('Erro ao alterar estabelecimento:', error);
-      setError('Erro ao alterar estabelecimento.');
-    }
-  };
+  }, []); // Apenas carregamento inicial, sem paginação
 
   const handleDelete = (estabelecimento) => {
     setCurrentEstabelecimento(estabelecimento);
@@ -100,11 +48,36 @@ const EstabelecimentosPublicados = () => {
     }
   };
 
+  // Função de Paginação
+  const indexOfLastEstabelecimento = currentPage * estabelecimentosPerPage;
+  const indexOfFirstEstabelecimento = indexOfLastEstabelecimento - estabelecimentosPerPage;
+
+  // Filtrar estabelecimentos com base no termo de pesquisa
+  const filteredEstabelecimentos = ativos.filter((estabelecimento) =>
+    estabelecimento.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    estabelecimento.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    estabelecimento.contacto.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const currentEstabelecimentos = filteredEstabelecimentos.slice(indexOfFirstEstabelecimento, indexOfLastEstabelecimento);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div className="container mt-5">
       <h1 className="text-center mb-4">Estabelecimentos Publicados</h1>
       {error && <p className="text-danger">{error}</p>}
-      <Button variant="primary" onClick={() => setShowModal(true)}>Criar Estabelecimento Ativo</Button>
+
+      {/* Barra de pesquisa */}
+      <Form.Control
+        type="text"
+        placeholder="Pesquisar estabelecimentos..."
+        className="mb-3"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+
+      {/* Tabela de Estabelecimentos */}
       <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
@@ -116,15 +89,14 @@ const EstabelecimentosPublicados = () => {
           </tr>
         </thead>
         <tbody>
-          {ativos.length > 0 ? (
-            ativos.map((estabelecimento) => (
+          {currentEstabelecimentos.length > 0 ? (
+            currentEstabelecimentos.map((estabelecimento) => (
               <tr key={estabelecimento.id}>
                 <td>{estabelecimento.nome}</td>
                 <td>{estabelecimento.localizacao}</td>
                 <td>{estabelecimento.contacto}</td>
                 <td>{estabelecimento.precoMedio}</td>
                 <td>
-                  <Button variant="warning" onClick={() => handleEdit(estabelecimento)}>Alterar</Button>{' '}
                   <Button variant="danger" onClick={() => handleDelete(estabelecimento)}>Eliminar</Button>
                 </td>
               </tr>
@@ -137,79 +109,14 @@ const EstabelecimentosPublicados = () => {
         </tbody>
       </Table>
 
-      {/* Modal para criar ou editar estabelecimento */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>{currentEstabelecimento ? 'Alterar' : 'Criar'} Estabelecimento Ativo</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group>
-              <Form.Label>Nome</Form.Label>
-              <Form.Control
-                type="text"
-                value={newEstabelecimento.nome}
-                onChange={(e) => setNewEstabelecimento({ ...newEstabelecimento, nome: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Localização</Form.Label>
-              <Form.Control
-                type="text"
-                value={newEstabelecimento.localizacao}
-                onChange={(e) => setNewEstabelecimento({ ...newEstabelecimento, localizacao: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Contacto</Form.Label>
-              <Form.Control
-                type="text"
-                value={newEstabelecimento.contacto}
-                onChange={(e) => setNewEstabelecimento({ ...newEstabelecimento, contacto: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Preço Médio</Form.Label>
-              <Form.Control
-                type="text"
-                value={newEstabelecimento.precoMedio}
-                onChange={(e) => setNewEstabelecimento({ ...newEstabelecimento, precoMedio: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Descrição</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={newEstabelecimento.descricao}
-                onChange={(e) => setNewEstabelecimento({ ...newEstabelecimento, descricao: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Check
-                type="checkbox"
-                label="Pago"
-                checked={newEstabelecimento.pago}
-                onChange={(e) => setNewEstabelecimento({ ...newEstabelecimento, pago: e.target.checked })}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Link da Localização</Form.Label>
-              <Form.Control
-                type="text"
-                value={newEstabelecimento.linkLocalizacao}
-                onChange={(e) => setNewEstabelecimento({ ...newEstabelecimento, linkLocalizacao: e.target.value })}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Cancelar</Button>
-          <Button variant="primary" onClick={currentEstabelecimento ? handleSaveEdit : handleCreateActive}>
-            {currentEstabelecimento ? 'Salvar Alterações' : 'Criar'}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {/* Paginação */}
+      <Pagination className="justify-content-center">
+        {[...Array(Math.ceil(filteredEstabelecimentos.length / estabelecimentosPerPage)).keys()].map(number => (
+          <Pagination.Item key={number + 1} active={number + 1 === currentPage} onClick={() => paginate(number + 1)}>
+            {number + 1}
+          </Pagination.Item>
+        ))}
+      </Pagination>
 
       {/* Modal de confirmação de exclusão */}
       <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>

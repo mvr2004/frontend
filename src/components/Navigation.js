@@ -37,8 +37,8 @@ const Navigation = () => {
                     Eventos
                   </a>
                   <ul className="dropdown-menu" aria-labelledby="eventsDropdown">
-                    <li><Link className="dropdown-item" to="/events/active">Eventos Ativos</Link></li>
-                    <li><Link className="dropdown-item" to="/events/inactive">Eventos Inativos</Link></li>
+                    <li><Link className="dropdown-item" to="/events/active">Eventos publicados</Link></li>
+                    <li><Link className="dropdown-item" to="/events/inactive">Eventos por publicar</Link></li>
                   </ul>
                 </li>
                 {/* Dropdown para Áreas */}
@@ -71,6 +71,10 @@ const Navigation = () => {
                     <li><Link className="dropdown-item" to="/establishments/inactive">Por Ativar</Link></li>
                   </ul>
                 </li>
+                {/* Link para Fórum */}
+                <li className="nav-item">
+                  <Link className="nav-link" to="/forum">Fórum</Link>
+                </li>
               </>
             )}
             {userRole === 'master' && (
@@ -92,5 +96,3 @@ const Navigation = () => {
 };
 
 export default Navigation;
-
-;

@@ -12,11 +12,12 @@ import CriarCentros from './views/criar_Centros';
 import ListarAreas from './views/ListarAreas';
 import ListarSubareas from './views/ListarSubareas';
 import PublishedCommentsPage from './views/comentarios_publicados';
-import EventosAtivos from './views/eventos_ativos'; // Altere o nome do componente para uma nomenclatura consistente
-import EventosInativos from './views/eventos_inativos'; // Altere o nome do componente para uma nomenclatura consistente
+import EventosAtivos from './views/eventos_ativos';
+import EventosInativos from './views/eventos_inativos';
 import PendingCommentsPage from './views/comentarios_pendentes';
 import EstablishmentsActive from './views/EstablishmentsActive';
 import EstablishmentsInactive from './views/EstablishmentsInactive';
+import Forum from './views/Forum'; // Import the new Forum component
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppContent = () => {
@@ -146,6 +147,14 @@ const AppContent = () => {
           element={
             <ProtectedRoute requiredRole="admin">
               <EstablishmentsInactive />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/forum" 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Forum />
             </ProtectedRoute>
           } 
         />

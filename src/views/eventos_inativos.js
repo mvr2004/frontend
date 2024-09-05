@@ -16,7 +16,9 @@ const ManageUnpublishedEvents = () => {
     const fetchUnpublishedEvents = async () => {
       try {
         const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
-        const unpublishedEvents = response.data.events.filter(event => !event.publicado);
+        // Filtrar apenas os eventos que não foram publicados
+        const unpublishedEvents = response.data.events.filter(event => event.publicado === false);
+        // Ordenar os eventos pela data
         const sortedEvents = unpublishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
         setEvents(sortedEvents);
       } catch (error) {
@@ -28,18 +30,25 @@ const ManageUnpublishedEvents = () => {
     fetchUnpublishedEvents();
   }, []);
 
-  const handleUpdateEvent = async () => {
-    if (currentEvent && updatedData) {
-      try {
-        await axios.put(`https://backend-9hij.onrender.com/envt/update/${currentEvent.id}`, updatedData);
-        alert('O evento foi atualizado com sucesso!');
-        setShowUpdateModal(false);
-        setEvents(events.map(event => (event.id === currentEvent.id ? { ...event, ...updatedData } : event)));
-      } catch (error) {
-        alert('Erro ao atualizar o evento.');
+const handleUpdateEvent = async () => {
+  if (currentEvent && updatedData) {
+    try {
+      // Combine data e hora se for necessário
+      if (updatedData.data && updatedData.hora) {
+        const dataHora = new Date(`${updatedData.data}T${updatedData.hora}`);
+        updatedData.data = dataHora.toISOString();  // Atualiza o campo data com a data e hora combinados
       }
+
+      await axios.put(`https://backend-9hij.onrender.com/envt/update/${currentEvent.id}`, updatedData);
+      alert('O evento foi atualizado com sucesso!');
+      setShowUpdateModal(false);
+      setEvents(events.map(event => (event.id === currentEvent.id ? { ...event, ...updatedData } : event)));
+    } catch (error) {
+      alert('Erro ao atualizar o evento.');
     }
-  };
+  }
+};
+
 
   const handleShowUpdateModal = (event) => {
     setCurrentEvent(event);
@@ -50,19 +59,22 @@ const ManageUnpublishedEvents = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    // Se o campo for "hora", adiciona os segundos
+    const updatedValue = name === 'hora' ? `${value}:00` : value;
     setUpdatedData(prevData => ({
       ...prevData,
-      [name]: value
+      [name]: updatedValue
     }));
   };
 
-  const activateEvent = async (id) => {
+  const publishEvent = async (id) => {
     try {
-      await axios.put(`https://backend-9hij.onrender.com/envt/activate/${id}`);
-      alert('O evento foi ativado!');
+      await axios.put(`https://backend-9hij.onrender.com/envt/publish/${id}`);
+      alert('O evento foi publicado!');
+      // Remover o evento da lista após a publicação
       setEvents(events.filter(event => event.id !== id));
     } catch (error) {
-      alert('Erro ao ativar o evento.');
+      alert('Erro ao publicar o evento.');
     }
   };
 
@@ -109,7 +121,7 @@ const ManageUnpublishedEvents = () => {
                   <td>{event.Utilizador.nome}</td>
                   <td>{event.Utilizador.email}</td>
                   <td>
-                    <Button variant="success" onClick={() => activateEvent(event.id)}>Ativar</Button>
+                    <Button variant="success" onClick={() => publishEvent(event.id)}>Publicar</Button>
                     <Button variant="warning" onClick={() => handleShowUpdateModal(event)}>Atualizar</Button>
                     <Button variant="danger" onClick={() => deleteEvent(event.id)}>Apagar</Button>
                   </td>
