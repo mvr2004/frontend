@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode'; // nao mudes isto ta bem assim
+import { jwtDecode } from 'jwt-decode'; // Don't change this, it's correctly set up.
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -9,10 +9,8 @@ const Navigation = () => {
   const userRole = decodedToken ? decodedToken.role : '';
 
   const handleLogout = () => {
-    // Remove o token JWT do localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('idCentro');
-    // Redireciona para a página de login
     navigate('/login');
   };
 
@@ -31,34 +29,24 @@ const Navigation = () => {
                   <Link className="nav-link" to="/dashboard">Dashboard</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/users">User Management</Link>
+                  <Link className="nav-link" to="/users">Utilizadores</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/events">Event Management</Link>
+                  <Link className="nav-link" to="/events">Eventos</Link>
                 </li>
 
-                {/* Adiciona dropdown de Áreas */}
+                {/* Dropdown for Áreas */}
                 <li className="nav-item dropdown">
                   <a className="nav-link dropdown-toggle" href="#" id="areasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Áreas
                   </a>
                   <ul className="dropdown-menu" aria-labelledby="areasDropdown">
-                    <li><Link className="dropdown-item" to="/areas">Listar Áreas</Link></li>
-                    <li><Link className="dropdown-item" to="/subareas">Listar Subáreas</Link></li>
+                    <li><Link className="dropdown-item" to="/areas">Áreas</Link></li>
+                    <li><Link className="dropdown-item" to="/subareas">Subáreas</Link></li>
                   </ul>
                 </li>
 
-                <li className="nav-item dropdown">
-                  <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Reports
-                  </a>
-                  <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <li><Link className="dropdown-item" to="/reportsPorResolver">To Solve</Link></li>
-                    <li><Link className="dropdown-item" to="/reportsResolvidos">Solved</Link></li>
-                  </ul>
-                </li>
-
-                {/* Adiciona dropdown de Comentários */}
+                {/* Dropdown for Comentários */}
                 <li className="nav-item dropdown">
                   <a className="nav-link dropdown-toggle" href="#" id="commentsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Comentários
@@ -66,6 +54,17 @@ const Navigation = () => {
                   <ul className="dropdown-menu" aria-labelledby="commentsDropdown">
                     <li><Link className="dropdown-item" to="/comments/published">Publicado</Link></li>
                     <li><Link className="dropdown-item" to="/comments/pending">Por Publicar</Link></li>
+                  </ul>
+                </li>
+
+                {/* New Dropdown for Estabelecimentos */}
+                <li className="nav-item dropdown">
+                  <a className="nav-link dropdown-toggle" href="#" id="estabelecimentosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Estabelecimentos
+                  </a>
+                  <ul className="dropdown-menu" aria-labelledby="estabelecimentosDropdown">
+                    <li><Link className="dropdown-item" to="/establishments/active">Ativos</Link></li>
+                    <li><Link className="dropdown-item" to="/establishments/inactive">Por Ativar</Link></li>
                   </ul>
                 </li>
               </>

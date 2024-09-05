@@ -14,6 +14,8 @@ import ListarAreas from './views/ListarAreas';
 import ListarSubareas from './views/ListarSubareas';
 import PublishedCommentsPage from './views/comentarios_publicados';
 import PendingCommentsPage from './views/comentarios_pendentes';
+import EstablishmentsActive from './views/EstablishmentsActive';
+import EstablishmentsInactive from './views/EstablishmentsInactive';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppContent = () => {
@@ -121,6 +123,22 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
+		<Route 
+		  path="/establishments/active" 
+		  element={
+			<ProtectedRoute requiredRole="admin">
+			  <EstablishmentsActive />
+			</ProtectedRoute>
+		  } 
+		/>
+		<Route 
+		  path="/establishments/inactive" 
+		  element={
+			<ProtectedRoute requiredRole="admin">
+			  <EstablishmentsInactive />
+			</ProtectedRoute>
+		  } 
+/>
         <Route 
           path="*" 
           element={<Navigate to="/login" />} 
