@@ -17,9 +17,7 @@ const ManagePublishedEvents = () => {
     const fetchPublishedEvents = async () => {
       try {
         const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
-        // Filtrar apenas os eventos publicados
         const publishedEvents = response.data.events.filter(event => event.publicado === true);
-        // Ordenar os eventos pela data
         const sortedEvents = publishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
         setEvents(sortedEvents);
       } catch (error) {
@@ -31,32 +29,21 @@ const ManagePublishedEvents = () => {
     fetchPublishedEvents();
   }, []);
 
-  const handleUpdateEvent = async () => {
-    if (currentEvent && updatedData) {
-      try {
-        // Combine data e hora se for necessário
-        if (updatedData.data && updatedData.hora) {
-          const dataHora = new Date(`${updatedData.data}T${updatedData.hora}`);
-          updatedData.data = dataHora.toISOString();  // Atualiza o campo data com a data e hora combinados
-        }
-
-        await axios.put(`https://backend-9hij.onrender.com/envt/updatev2/${currentEvent.id}`, updatedData);
-        alert('O evento foi atualizado com sucesso!');
-        setShowUpdateModal(false);
-        setEvents(events.map(event => (event.id === currentEvent.id ? { ...event, ...updatedData } : event)));
-      } catch (error) {
-        alert('Erro ao atualizar o evento.');
-      }
-    }
-  };
-
+  // Função para abrir o modal de atualização e carregar os dados
   const handleShowUpdateModal = (event) => {
     setCurrentEvent(event);
+    setUpdatedData({
+      nome: event.nome,
+      data: new Date(event.data).toISOString().split('T')[0], // Converte para formato YYYY-MM-DD
+      hora: event.hora || new Date(event.data).toTimeString().substring(0, 5) // Usa a hora do evento ou extrai do campo de data
+    });
     setShowUpdateModal(true);
   };
 
+  // Função para fechar o modal de atualização
   const handleCloseUpdateModal = () => setShowUpdateModal(false);
 
+  // Função para capturar as mudanças nos campos de input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUpdatedData(prevData => ({
@@ -65,18 +52,41 @@ const ManagePublishedEvents = () => {
     }));
   };
 
+  // Método para atualizar o evento com data e hora separados
+  const handleUpdateEvent = async () => {
+    if (currentEvent && updatedData) {
+      try {
+        const updatedEventData = {
+          nome: updatedData.nome,
+          data: updatedData.data,
+          hora: updatedData.hora,
+        };
+
+        await axios.put(`https://backend-9hij.onrender.com/envt/update2/${currentEvent.id}`, updatedEventData);
+        alert('O evento foi atualizado com sucesso!');
+        setShowUpdateModal(false);
+
+        // Atualiza o evento na lista de eventos
+        setEvents(events.map(event => (event.id === currentEvent.id ? { ...event, ...updatedEventData } : event)));
+      } catch (error) {
+        alert('Erro ao atualizar o evento.');
+      }
+    }
+  };
+
+  // Função para ativar/desativar o evento
   const toggleEventStatus = async (id, isActive) => {
     try {
-      const updatedStatus = !isActive; // Alterna o status
+      const updatedStatus = !isActive;
       await axios.put(`https://backend-9hij.onrender.com/envt/toggle-active/${id}`, { ativo: updatedStatus });
       alert(`O evento foi ${updatedStatus ? 'ativado' : 'desativado'} com sucesso!`);
-      // Atualiza o status na lista
       setEvents(events.map(event => (event.id === id ? { ...event, ativo: updatedStatus } : event)));
     } catch (error) {
       alert('Erro ao alterar o status do evento.');
     }
   };
 
+  // Função para apagar o evento
   const deleteEvent = async (id) => {
     try {
       await axios.delete(`https://backend-9hij.onrender.com/envt/delete/${id}`);
@@ -87,7 +97,7 @@ const ManagePublishedEvents = () => {
     }
   };
 
-  // Filtrar eventos com base no termo de pesquisa
+  // Filtro para os eventos com base no termo de pesquisa
   const filteredEvents = events.filter((event) =>
     event.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.Utilizador.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -123,7 +133,8 @@ const ManagePublishedEvents = () => {
             <thead className="thead-dark">
               <tr>
                 <th>Nome</th>
-                <th>Data e Hora</th>
+                <th>Data</th>
+                <th>Hora</th>
                 <th>Utilizador</th>
                 <th>Email</th>
                 <th>Status</th>
@@ -134,7 +145,8 @@ const ManagePublishedEvents = () => {
               {currentEvents.map(event => (
                 <tr key={event.id}>
                   <td>{event.nome}</td>
-                  <td>{new Date(event.data).toLocaleString()}</td>
+                  <td>{new Date(event.data).toLocaleDateString()}</td> {/* Exibe apenas a data */}
+                  <td>{event.hora || new Date(event.data).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td> {/* Exibe a hora correta */}
                   <td>{event.Utilizador.nome}</td>
                   <td>{event.Utilizador.email}</td>
                   <td>{event.ativo ? 'Ativo' : 'Inativo'}</td>
@@ -157,6 +169,7 @@ const ManagePublishedEvents = () => {
             ))}
           </Pagination>
 
+          {/* Modal de Atualização */}
           <Modal show={showUpdateModal} onHide={handleCloseUpdateModal}>
             <Modal.Header closeButton>
               <Modal.Title>Atualizar Evento</Modal.Title>
@@ -170,7 +183,7 @@ const ManagePublishedEvents = () => {
                       type="text"
                       placeholder="Nome do evento"
                       name="nome"
-                      defaultValue={currentEvent.nome}
+                      value={updatedData.nome}
                       onChange={handleInputChange}
                     />
                   </Form.Group>
@@ -179,7 +192,7 @@ const ManagePublishedEvents = () => {
                     <Form.Control
                       type="date"
                       name="data"
-                      defaultValue={new Date(currentEvent.data).toISOString().split('T')[0]}
+                      value={updatedData.data}
                       onChange={handleInputChange}
                     />
                   </Form.Group>
@@ -188,7 +201,7 @@ const ManagePublishedEvents = () => {
                     <Form.Control
                       type="time"
                       name="hora"
-                      defaultValue={new Date(currentEvent.data).toTimeString().substring(0, 5)}
+                      value={updatedData.hora}
                       onChange={handleInputChange}
                     />
                   </Form.Group>

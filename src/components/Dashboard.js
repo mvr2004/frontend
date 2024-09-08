@@ -3,39 +3,37 @@ import axios from 'axios';
 import { Box, Grid, Typography } from '@mui/material';
 
 const Dashboard = () => {
-    const [totalUsers, setTotalUsers] = useState(0);
-    const [activeUsers, setActiveUsers] = useState(0);
-    const [inactiveUsers, setInactiveUsers] = useState(0);
-    const [subareaCount, setSubareaCount] = useState(0);
-    const [areaCount, setAreaCount] = useState(0);
-    const [activeReports, setActiveReports] = useState(0);
-    const [resolvedReports, setResolvedReports] = useState(0);
-    const [totalCentros, setTotalCentros] = useState(0);
+    const [forumActive, setForumActive] = useState(0);
+    const [forumInactive, setForumInactive] = useState(0);
+    const [estabActive, setEstabActive] = useState(0);
+    const [estabInactive, setEstabInactive] = useState(0);
+    const [unpublishedCount, setUnpublishedCount] = useState(0);
+    const [publishedCount, setPublishedCount] = useState(0);
+    const [activeCount, setActiveCount] = useState(0);
     const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const centroId = localStorage.getItem('idCentro'); // Recupera o centroId do localStorage
+
                 const [
-                    { data: { totalUsers, activeUsers, inactiveUsers } },
-                    { data: { subareaCount, areaCount } },
-                    { data: { activeReports, resolvedReports } },
-                    { data: { totalCentros } }
+                    { data: { ativos: forumActive, inativos: forumInactive } },
+                    { data: { active: estabActive, inactive: estabInactive } },
+                    { data: { unpublishedCount, publishedCount, activeCount } }
                 ] = await Promise.all([
-                    axios.get('https://backend-ai2-proj.onrender.com/user/count'),
-                    axios.get('https://backend-ai2-proj.onrender.com/area/count-subareas-and-areas'),
-                    axios.get('https://backend-ai2-proj.onrender.com/report/count-reports'),
-                    axios.get('https://backend-ai2-proj.onrender.com/centro/count')
+                    axios.get(`https://backend-9hij.onrender.com/forum/count-status/${centroId}`),
+                    axios.get(`https://backend-9hij.onrender.com/estab/contar/ativos-inativos/${centroId}`),
+                    axios.get(`https://backend-9hij.onrender.com/envt/eventCounts/${centroId}`)
                 ]);
 
-                setTotalUsers(totalUsers);
-                setActiveUsers(activeUsers);
-                setInactiveUsers(inactiveUsers);
-                setSubareaCount(subareaCount);
-                setAreaCount(areaCount);
-                setActiveReports(activeReports);
-                setResolvedReports(resolvedReports);
-                setTotalCentros(totalCentros);
+                setForumActive(forumActive);
+                setForumInactive(forumInactive);
+                setEstabActive(estabActive);
+                setEstabInactive(estabInactive);
+                setUnpublishedCount(unpublishedCount);
+                setPublishedCount(publishedCount);
+                setActiveCount(activeCount);
             } catch (error) {
                 console.error('Erro ao buscar dados do backend:', error);
                 setError('Erro ao buscar dados do backend');
@@ -47,6 +45,26 @@ const Dashboard = () => {
 
     return (
         <Grid container spacing={3} justifyContent="center">
+            {error && (
+                <Grid item xs={12}>
+                    <Box
+                        textAlign="center"
+                        border={1}
+                        p={2}
+                        borderRadius={5}
+                        boxShadow={3}
+                        display="flex"
+                        flexDirection="column"
+                        justifyContent="center"
+                        alignItems="center"
+                        height="100%"
+                    >
+                        <Typography variant="h6" color="error">
+                            {error}
+                        </Typography>
+                    </Box>
+                </Grid>
+            )}
             <Grid item xs={12} md={3}>
                 <Box
                     textAlign="center"
@@ -60,8 +78,8 @@ const Dashboard = () => {
                     alignItems="center"
                     height="100%"
                 >
-                    <Typography variant="h6">Total de Usuários</Typography>
-                    <Typography variant="h4">{totalUsers}</Typography>
+                    <Typography variant="h6">Fórum Ativos</Typography>
+                    <Typography variant="h4">{forumActive}</Typography>
                 </Box>
             </Grid>
             <Grid item xs={12} md={3}>
@@ -77,8 +95,8 @@ const Dashboard = () => {
                     alignItems="center"
                     height="100%"
                 >
-                    <Typography variant="h6">Usuários Ativos</Typography>
-                    <Typography variant="h4">{activeUsers}</Typography>
+                    <Typography variant="h6">Fórum Inativos</Typography>
+                    <Typography variant="h4">{forumInactive}</Typography>
                 </Box>
             </Grid>
             <Grid item xs={12} md={3}>
@@ -94,8 +112,8 @@ const Dashboard = () => {
                     alignItems="center"
                     height="100%"
                 >
-                    <Typography variant="h6">Usuários Inativos</Typography>
-                    <Typography variant="h4">{inactiveUsers}</Typography>
+                    <Typography variant="h6">Estabelecimentos Ativos</Typography>
+                    <Typography variant="h4">{estabActive}</Typography>
                 </Box>
             </Grid>
             <Grid item xs={12} md={3}>
@@ -111,8 +129,27 @@ const Dashboard = () => {
                     alignItems="center"
                     height="100%"
                 >
-                    <Typography variant="h6">Total de Subáreas</Typography>
-                    <Typography variant="h4">{subareaCount}</Typography>
+                    <Typography variant="h6">Estabelecimentos Inativos</Typography>
+                    <Typography variant="h4">{estabInactive}</Typography>
+                </Box>
+            </Grid>
+
+            {/* Novos Dados de Contagem de Eventos */}
+            <Grid item xs={12} md={3}>
+                <Box
+                    textAlign="center"
+                    border={1}
+                    p={2}
+                    borderRadius={5}
+                    boxShadow={3}
+                    display="flex"
+                    flexDirection="column"
+                    justifyContent="center"
+                    alignItems="center"
+                    height="100%"
+                >
+                    <Typography variant="h6">Eventos Não Publicados</Typography>
+                    <Typography variant="h4">{unpublishedCount}</Typography>
                 </Box>
             </Grid>
             <Grid item xs={12} md={3}>
@@ -128,8 +165,8 @@ const Dashboard = () => {
                     alignItems="center"
                     height="100%"
                 >
-                    <Typography variant="h6">Total de Áreas</Typography>
-                    <Typography variant="h4">{areaCount}</Typography>
+                    <Typography variant="h6">Eventos Publicados</Typography>
+                    <Typography variant="h4">{publishedCount}</Typography>
                 </Box>
             </Grid>
             <Grid item xs={12} md={3}>
@@ -145,42 +182,8 @@ const Dashboard = () => {
                     alignItems="center"
                     height="100%"
                 >
-                    <Typography variant="h6">Relatórios Ativos</Typography>
-                    <Typography variant="h4">{activeReports}</Typography>
-                </Box>
-            </Grid>
-            <Grid item xs={12} md={3}>
-                <Box
-                    textAlign="center"
-                    border={1}
-                    p={2}
-                    borderRadius={5}
-                    boxShadow={3}
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    height="100%"
-                >
-                    <Typography variant="h6">Relatórios Resolvidos</Typography>
-                    <Typography variant="h4">{resolvedReports}</Typography>
-                </Box>
-            </Grid>
-            <Grid item xs={12} md={3}>
-                <Box
-                    textAlign="center"
-                    border={1}
-                    p={2}
-                    borderRadius={5}
-                    boxShadow={3}
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    height="100%"
-                >
-                    <Typography variant="h6">Total de Centros</Typography>
-                    <Typography variant="h4">{totalCentros}</Typography>
+                    <Typography variant="h6">Eventos Ativos</Typography>
+                    <Typography variant="h4">{activeCount}</Typography>
                 </Box>
             </Grid>
         </Grid>
