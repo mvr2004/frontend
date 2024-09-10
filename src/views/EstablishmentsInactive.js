@@ -97,40 +97,55 @@ const EstabelecimentosPendentes = () => {
     <div className="container mt-5">
       <h1 className="text-center mb-4">Estabelecimentos Publicados</h1>
       {error && <p className="text-danger">{error}</p>}
-      <Table striped bordered hover className="mt-3">
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Localização</th>
-            <th>Contacto</th>
-            <th>Preço Médio</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ativos.length > 0 ? (
-            ativos.map((estabelecimento) => (
-              <tr key={estabelecimento.id}>
-                <td>{estabelecimento.nome}</td>
-                <td>{estabelecimento.localizacao}</td>
-                <td>{estabelecimento.contacto}</td>
-                <td>{estabelecimento.precoMedio}</td>
-                <td>
-                  <Button variant="warning" onClick={() => handleEdit(estabelecimento)}>Editar</Button>{' '}
-                  <Button variant="danger" onClick={() => handleDelete(estabelecimento)}>Apagar</Button>{' '}
-                  {!estabelecimento.ativo && (
-                    <Button variant="success" onClick={() => handleActivate(estabelecimento)}>Ativar</Button>
-                  )}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5" className="text-center">Nenhum estabelecimento publicado encontrado.</td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+<Table striped bordered hover className="mt-3">
+  <thead>
+    <tr>
+      <th>Imagem</th> {/* Nova coluna para a imagem */}
+      <th>Nome</th>
+      <th>Localização</th>
+      <th>Contacto</th>
+      <th>Preço Médio</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {ativos.length > 0 ? (
+      ativos.map((estabelecimento) => (
+        <tr key={estabelecimento.id}>
+          <td>
+            <img
+              src={estabelecimento.foto}
+              alt={estabelecimento.nome}
+              style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+            />
+          </td>
+          <td>{estabelecimento.nome}</td>
+          <td>{estabelecimento.localizacao}</td>
+          <td>{estabelecimento.contacto}</td>
+          <td>{estabelecimento.precoMedio}</td>
+          <td>
+            <Button variant="warning" onClick={() => handleEdit(estabelecimento)}>
+              Editar
+            </Button>{' '}
+            <Button variant="danger" onClick={() => handleDelete(estabelecimento)}>
+              Apagar
+            </Button>{' '}
+            {!estabelecimento.ativo && (
+              <Button variant="success" onClick={() => handleActivate(estabelecimento)}>
+                Ativar
+              </Button>
+            )}
+          </td>
+        </tr>
+      ))
+    ) : (
+      <tr>
+        <td colSpan="6" className="text-center">Nenhum estabelecimento publicado encontrado.</td>
+      </tr>
+    )}
+  </tbody>
+</Table>
+
 
       {/* Modal de Edição */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
