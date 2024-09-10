@@ -13,21 +13,29 @@ const ManagePublishedEvents = () => {
   const [updatedData, setUpdatedData] = useState({});
   const [searchTerm, setSearchTerm] = useState(''); // Estado para termo de pesquisa
 
-  useEffect(() => {
-    const fetchPublishedEvents = async () => {
-      try {
-        const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
-        const publishedEvents = response.data.events.filter(event => event.publicado === true);
-        const sortedEvents = publishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
-        setEvents(sortedEvents);
-      } catch (error) {
-        setError('Erro ao buscar eventos publicados.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPublishedEvents();
-  }, []);
+useEffect(() => {
+  const idCentro = localStorage.getItem('idCentro');
+
+  if (!idCentro) {
+    setError('ID do centro não encontrado.');
+    return;
+  }
+
+  const fetchPublishedEvents = async () => {
+    try {
+      const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
+      const publishedEvents = response.data.events
+        .filter(event => event.publicado === true && event.Utilizador.idCentro === idCentro); // Filtra pelo centro id
+      const sortedEvents = publishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
+      setEvents(sortedEvents);
+    } catch (error) {
+      setError('Erro ao buscar eventos publicados.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchPublishedEvents();
+}, []);
 
   // Função para abrir o modal de atualização e carregar os dados
   const handleShowUpdateModal = (event) => {

@@ -12,23 +12,30 @@ const ManageUnpublishedEvents = () => {
   const [currentEvent, setCurrentEvent] = useState(null);
   const [updatedData, setUpdatedData] = useState({});
 
-  useEffect(() => {
-    const fetchUnpublishedEvents = async () => {
-      try {
-        const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
-        // Filtrar apenas os eventos que não foram publicados
-        const unpublishedEvents = response.data.events.filter(event => event.publicado === false);
-        // Ordenar os eventos pela data
-        const sortedEvents = unpublishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
-        setEvents(sortedEvents);
-      } catch (error) {
-        setError('Erro ao buscar eventos não publicados.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUnpublishedEvents();
-  }, []);
+useEffect(() => {
+  const idCentro = localStorage.getItem('idCentro');
+
+  if (!idCentro) {
+    setError('ID do centro não encontrado.');
+    return;
+  }
+
+  const fetchUnpublishedEvents = async () => {
+    try {
+      const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
+      const unpublishedEvents = response.data.events
+        .filter(event => event.publicado === false && event.Utilizador.idCentro === idCentro); // Filtra pelo centro id
+      const sortedEvents = unpublishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
+      setEvents(sortedEvents);
+    } catch (error) {
+      setError('Erro ao buscar eventos não publicados.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchUnpublishedEvents();
+}, []);
+
 
 const handleUpdateEvent = async () => {
   if (currentEvent && updatedData) {
