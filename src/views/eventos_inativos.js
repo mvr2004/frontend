@@ -24,7 +24,7 @@ useEffect(() => {
     try {
       const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
       const unpublishedEvents = response.data.events
-        .filter(event => event.publicado === false && event.Utilizador.idCentro === idCentro); // Filtra pelo centro id
+        .filter(event => event.publicado === false && event.centroId == idCentro); // Filtra pelo centroId do evento
       const sortedEvents = unpublishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
       setEvents(sortedEvents);
     } catch (error) {
