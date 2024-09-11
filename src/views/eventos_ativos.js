@@ -14,28 +14,30 @@ const ManagePublishedEvents = () => {
   const [searchTerm, setSearchTerm] = useState(''); // Estado para termo de pesquisa
 
 useEffect(() => {
-  const idCentro = localStorage.getItem('idCentro');
-
-  if (!idCentro) {
-    setError('ID do centro não encontrado.');
-    return;
-  }
-
-  const fetchPublishedEvents = async () => {
+  const fetchUnpublishedEvents = async () => {
     try {
+      const idCentro = localStorage.getItem('idCentro'); // Buscar idCentro do localStorage
       const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
-      const publishedEvents = response.data.events
-        .filter(event => event.publicado === true && event.centroId == idCentro); // Filtra pelo centroId do evento
-      const sortedEvents = publishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
+      
+      // Filtrar apenas os eventos que não foram publicados e pertencem ao centroId
+      const unpublishedEvents = response.data.events.filter(event => 
+        event.publicado === true && event.centroId === Number(idCentro)
+      );
+
+      // Ordenar os eventos pela data
+      const sortedEvents = unpublishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
       setEvents(sortedEvents);
     } catch (error) {
-      setError('Erro ao buscar eventos publicados.');
+      setError('Erro ao buscar eventos não publicados.');
     } finally {
       setLoading(false);
     }
   };
-  fetchPublishedEvents();
+  fetchUnpublishedEvents();
 }, []);
+
+
+
 
   // Função para abrir o modal de atualização e carregar os dados
   const handleShowUpdateModal = (event) => {

@@ -11,20 +11,21 @@ const ManageUnpublishedEvents = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [updatedData, setUpdatedData] = useState({});
+  
+  
 
 useEffect(() => {
-  const idCentro = localStorage.getItem('idCentro');
-
-  if (!idCentro) {
-    setError('ID do centro não encontrado.');
-    return;
-  }
-
   const fetchUnpublishedEvents = async () => {
     try {
+      const idCentro = localStorage.getItem('idCentro'); // Buscar idCentro do localStorage
       const response = await axios.get('https://backend-9hij.onrender.com/envt/list');
-      const unpublishedEvents = response.data.events
-        .filter(event => event.publicado === false && event.centroId == idCentro); // Filtra pelo centroId do evento
+      
+      // Filtrar apenas os eventos que não foram publicados e pertencem ao centroId
+      const unpublishedEvents = response.data.events.filter(event => 
+        event.publicado === false && event.centroId === Number(idCentro)
+      );
+
+      // Ordenar os eventos pela data
       const sortedEvents = unpublishedEvents.sort((a, b) => new Date(b.data) - new Date(a.data));
       setEvents(sortedEvents);
     } catch (error) {
@@ -35,6 +36,7 @@ useEffect(() => {
   };
   fetchUnpublishedEvents();
 }, []);
+
 
 
 const handleUpdateEvent = async () => {
